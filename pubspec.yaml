@@ -1,0 +1,48 @@
+name: smoothssh
+description: "A zero-cloud, privacy-first SSH client for the JuiceSSH refugee."
+publish_to: 'none'
+version: 0.1.0+13
+
+environment:
+  sdk: ^3.11.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  xterm:
+    git:
+      url: https://github.com/TerminalStudio/xterm.dart.git
+      ref: master
+  dartssh2: ^2.2.0
+  flutter_secure_storage: ^9.2.2
+  
+  uuid: ^4.5.1
+  google_fonts: ^6.2.1
+  file_picker: ^8.1.2
+  flutter_background: ^1.2.0
+  permission_handler: ^11.3.1
+  local_auth: ^2.2.0
+  encrypt: ^5.0.3
+  crypto: ^3.0.3
+  path_provider: ^2.1.2
+  share_plus: ^10.1.2
+  url_launcher: ^6.3.0
+  animations: ^2.0.11
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter:
+  uses-material-design: true
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/app_icon.png"
+  adaptive_icon_background: "#000000"
+  adaptive_icon_foreground: "assets/app_icon.png"
