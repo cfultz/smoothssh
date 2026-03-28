@@ -1,18 +1,75 @@
-name: SmoothSSH Release - Zippy Zebra
+name: Build SmoothSSH Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
-  build:
+  # ============================================================================
+  # JOB 1: Android APKs
+  # ============================================================================
+  build-android:
+    name: Build Android APKs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Extract Zippy Zebra Version
         id: get_version
+        run: |
+          # Finds the line in settings_screen.dart and extracts the string
+          LINE=$(grep "applicationVersion:" lib/screens/settings_screen.dart)
+          FULL_STRING=$(echo "$LINE" | sed "s/.*'\(.*\)'.*/\1/")
+          VERSION_ONLY=$(echo "$FULL_STRING" | cut -d' ' -f1)
+          RELEASE_NAME=$(echo "$FULL_STRING" | cut -d'-' -f2- | xargs)
+          
+          echo "VERSION=$VERSION_ONLY" >> $GITHUB_ENV
+          echo "REL_NAME=$RELEASE_NAME" >> $GITHUB_ENV
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Android Bundle and Split APKs
+        run: |
+          flutter build appbundle --release
+          flutter build apk --split-per-abi
+
+      - name: Upload Android Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-builds
+          path: |
+            build/app/outputs/flutter-apk/app-*-release.apk
+            build/app/outputs/bundle/release/app-release.aab
+
+  # ============================================================================
+  # JOB 2: Create GitHub Release
+  # ============================================================================
+  create-release:
+    name: Create Release
+    needs: [build-android]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract Zippy Zebra Version (for Release metadata)
         run: |
           LINE=$(grep "applicationVersion:" lib/screens/settings_screen.dart)
           FULL_STRING=$(echo "$LINE" | sed "s/.*'\(.*\)'.*/\1/")
@@ -21,35 +78,25 @@ jobs:
           echo "VERSION=$VERSION_ONLY" >> $GITHUB_ENV
           echo "REL_NAME=$RELEASE_NAME" >> $GITHUB_ENV
 
-      - name: Set up Java
-        uses: actions/setup-java@v3
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
         with:
-          distribution: 'zulu'
-          java-version: '17'
+          name: android-builds
+          path: artifacts
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+      - name: Create Release and Upload Assets
+        uses: softprops/action-gh-release@v2
         with:
-          channel: 'stable'
-
-      - name: Install Dependencies
-        run: flutter pub get
-
-      - name: Build Android Artifacts
-        run: |
-          flutter build appbundle --release
-          flutter build apk --release
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
+          tag_name: "v${{ env.VERSION }}-${{ github.run_number }}"
           name: "SmoothSSH: ${{ env.REL_NAME }}"
-          tag_name: ${{ github.ref_name }}
           body: |
             ### 🦓 Release: ${{ env.REL_NAME }}
-            **App Version:** ${{ env.VERSION }}
+            **Version:** ${{ env.VERSION }}
+            **Build Number:** ${{ github.run_number }}
+            
+            Automated build for SmoothSSH. Includes split APKs for various Android architectures and the full App Bundle.
           files: |
-            build/app/outputs/bundle/release/app-release.aab
-            build/app/outputs/flutter-apk/app-release.apk
+            artifacts/**/*.apk
+            artifacts/**/*.aab
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
