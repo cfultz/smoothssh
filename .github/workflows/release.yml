@@ -14,10 +14,10 @@ jobs:
       - name: Extract Zippy Zebra Version
         id: get_version
         run: |
-          # Target line 415 of the settings screen
-          LINE=$(sed -n '415p' lib/screens/settings_screen.dart)
+          # Find the line containing applicationVersion dynamically
+          LINE=$(grep "applicationVersion:" lib/screens/settings_screen.dart)
           
-          # Extract the full version string between the single quotes
+          # Extract the full string between the single quotes
           # Result: 0.1.0-alpha - Zippy Zebra
           FULL_STRING=$(echo "$LINE" | sed "s/.*'\(.*\)'.*/\1/")
           
@@ -25,8 +25,7 @@ jobs:
           VERSION_ONLY=$(echo "$FULL_STRING" | cut -d' ' -f1)
           
           # Extract the text after the dash (Zippy Zebra)
-          # We use -f2- to ensure we get everything if there are more dashes
-          RELEASE_NAME=$(echo "$FULL_STRING" | cut -d'-' -f2 | xargs)
+          RELEASE_NAME=$(echo "$FULL_STRING" | cut -d'-' -f2- | xargs)
           
           echo "VERSION=$VERSION_ONLY" >> $GITHUB_ENV
           echo "REL_NAME=$RELEASE_NAME" >> $GITHUB_ENV
