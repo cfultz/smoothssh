@@ -4,10 +4,20 @@
 
 Forget clunky menus and dropped frames. SmoothSSH provides a smooth interface optimized for modern hardware like the Pixel 9 Pro XL, ensuring 60fps terminal scrolling and cryptographic handshakes that don't hang your UI.
 
+## 📸 Screenshots
+
+| | | |
+|:---:|:---:|:---:|
+| [<img src="assets/1.png" width="250"/>](assets/1.png) | [<img src="assets/2.png" width="250"/>](assets/2.png) | [<img src="assets/3.png" width="250"/>](assets/3.png) |
+| [<img src="assets/4.png" width="250"/>](assets/4.png) | [<img src="assets/5.png" width="250"/>](assets/5.png) | [<img src="assets/6.png" width="250"/>](assets/6.png) |
+
+*(Click any image to view the full-resolution screenshot)*
+
 ## ✨ Key Features
 
 * **Multi-Session Swiping:** Running maintenance across a cluster? Fluidly swipe left or right on the terminal canvas to instantly snap between active SSH sessions.
 * **The Transcript Engine:** Stop fighting with mobile text selection. One tap dumps your entire live terminal buffer into a native, searchable text view—perfect for grabbing IP addresses or logs.
+* **Dynamic Control Row:** A mobile-optimized accessory row that seamlessly swaps to vital sysadmin keys (SIGINT, EOF, SUSPEND) the moment you tap CTRL.
 * **Encrypted Vault:** All connections, passwords, and private keys (PEM) are stored in a heavily encrypted local vault using AES-256.
 * **Biometric App Lock:** Secure the entire application behind your device's native Fingerprint, Face ID, or PIN.
 * **Frictionless Workflow:** Quick-add new Identities or Private Keys directly from the connection screen without losing your place.
@@ -47,6 +57,14 @@ To get SmoothSSH running on your local machine:
     # Use --release mode for optimal crypto and rendering performance
     flutter run --release
     ```
+
+## ⚙️ Automated Releases
+
+This repository uses GitHub Actions to automatically build and package the app. Any push to the `main` branch triggers a workflow that generates:
+* A universal Android App Bundle (`.aab`)
+* Architecture-specific split `.apk` files for optimized device installation
+
+Check the **Releases** tab for the latest compiled binaries.
 
 ## 📂 Project Structure
 
