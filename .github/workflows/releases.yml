@@ -37,8 +37,8 @@ jobs:
 
       - name: Build Android Artifacts
         run: |
-          flutter build appbundle --release --no-codesign
-          flutter build apk --release --no-codesign
+          flutter build appbundle --release
+          flutter build apk --release
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -48,12 +48,6 @@ jobs:
           body: |
             ### 🦓 Release: ${{ env.REL_NAME }}
             **App Version:** ${{ env.VERSION }}
-            
-            **Automated Build Features:**
-            - Gesture-based multi-session swiping
-            - Session Transcript & Paste logic
-            - AES-Encrypted Vault
-            - Pixel 9 Pro XL Optimized rendering
           files: |
             build/app/outputs/bundle/release/app-release.aab
             build/app/outputs/flutter-apk/app-release.apk
