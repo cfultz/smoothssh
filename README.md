@@ -11,8 +11,6 @@ Forget clunky menus and dropped frames. SmoothSSH provides a smooth interface op
 | [<img src="assets/1.png" width="250"/>](assets/1.png) | [<img src="assets/2.png" width="250"/>](assets/2.png) | [<img src="assets/3.png" width="250"/>](assets/3.png) |
 | [<img src="assets/4.png" width="250"/>](assets/4.png) | [<img src="assets/5.png" width="250"/>](assets/5.png) | [<img src="assets/6.png" width="250"/>](assets/6.png) |
 
-*(Click any image to view the full-resolution screenshot)*
-
 ## ✨ Key Features
 
 * **Multi-Session Swiping:** Running maintenance across a cluster? Fluidly swipe left or right on the terminal canvas to instantly snap between active SSH sessions.
@@ -47,7 +45,6 @@ To get SmoothSSH running on your local machine:
     ```
 
 3.  **Generate Launcher Icons:**
-    *(Ensure your `app_icon.png` is in the `assets/` directory)*
     ```bash
     flutter pub run flutter_launcher_icons
     ```
