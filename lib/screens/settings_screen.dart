@@ -224,10 +224,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       final bool didAuthenticate = await auth.authenticate(
         localizedReason: reason,
-        options: const AuthenticationOptions(
-          biometricOnly: false, 
-          stickyAuth: true,
-        ),
+        biometricOnly: false,
+        persistAcrossBackgrounding: true,
       );
 
       if (didAuthenticate) {
@@ -400,7 +398,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const ListTile(
                 leading: Icon(Icons.info_outline, color: Colors.grey),
                 title: Text('SmoothSSH'),
-                subtitle: Text('Version 0.1.0 - Zippy Zebra', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                subtitle: Text('Version 0.1.5 - Atomic Axolotl', style: TextStyle(color: Colors.grey, fontSize: 12)),
               ),
               const Divider(height: 1),
               ListTile(
@@ -412,7 +410,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   showLicensePage(
                     context: context,
                     applicationName: 'SmoothSSH',
-                    applicationVersion: '0.1.0-alpha - Zippy Zebra',
+                    applicationVersion: '0.1.5-alpha - Atomic Axolotl',
                     applicationIcon: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Icon(Icons.terminal, size: 48, color: Theme.of(context).primaryColor),

@@ -45,15 +45,9 @@ class ConnectionService {
     final index = all.indexWhere((element) => element.id == id);
     if (index != -1) {
       final old = all[index];
-      final updated = Connection(
-        id: old.id,
-        label: old.label,
-        host: old.host,
-        port: old.port,
-        identityId: old.identityId,
-        usageCount: old.usageCount + 1,
-      );
-      all[index] = updated;
+      final Map<String, dynamic> json = old.toJson();
+      json['usageCount'] = (json['usageCount'] as int? ?? 0) + 1;
+      all[index] = Connection.fromJson(json);
       await _storage.write(key: _key, value: jsonEncode(all.map((e) => e.toJson()).toList()));
     }
   }

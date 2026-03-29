@@ -34,38 +34,20 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
   }
 
   void _sendKey(TerminalKey key) {
-    widget.terminal.keyInput(
-      key, 
-      ctrl: _isCtrlActive, 
-      alt: _isAltActive,
-    );
-    
-    if (_isCtrlActive || _isAltActive) {
-      setState(() {
-        _isCtrlActive = false;
-        _isAltActive = false;
-      });
+    widget.terminal.keyInput(key, alt: _isAltActive);
+    if (_isAltActive) {
+      setState(() => _isAltActive = false);
     }
   }
 
-  void _sendText(String text) {
-    if (_isCtrlActive) {
-      if (text.length == 1) {
-        final charCode = text.toLowerCase().codeUnitAt(0);
-        if (charCode >= 97 && charCode <= 122) { 
-          widget.terminal.paste(String.fromCharCode(charCode - 96));
-        }
-      }
-    } else {
-      widget.terminal.paste(text);
-    }
+  void _sendCtrlByte(String char) {
+    final code = char.toUpperCase().codeUnitAt(0) - 64;
+    widget.terminal.textInput(String.fromCharCode(code));
+    setState(() => _isCtrlActive = false);
+  }
 
-    if (_isCtrlActive || _isAltActive) {
-      setState(() {
-        _isCtrlActive = false;
-        _isAltActive = false;
-      });
-    }
+  void _sendText(String text) {
+    widget.terminal.paste(text);
   }
 
   @override
@@ -78,58 +60,83 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
         color: theme.colorScheme.surface,
         border: Border(top: BorderSide(color: theme.dividerColor)),
       ),
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        children: [
-          
-          _buildToggleKey('CTRL', _isCtrlActive, () => setState(() => _isCtrlActive = !_isCtrlActive)),
-          _buildToggleKey('ALT', _isAltActive, () => setState(() => _isAltActive = !_isAltActive)),
-          _buildVerticalDivider(),
+      child: _isCtrlActive ? _buildCtrlActiveRow() : _buildNormalRow(),
+    );
+  }
 
-          _buildTerminalKey('ESC', TerminalKey.escape),
-          _buildTerminalKey('TAB', TerminalKey.tab),
-          _buildTerminalKey('↑', TerminalKey.arrowUp),
-          _buildTerminalKey('↓', TerminalKey.arrowDown),
-          _buildTerminalKey('←', TerminalKey.arrowLeft),
-          _buildTerminalKey('→', TerminalKey.arrowRight),
-          _buildVerticalDivider(),
+  Widget _buildNormalRow() {
+    final theme = Theme.of(context);
+    return ListView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      children: [
+        _buildToggleKey('CTRL', _isCtrlActive, () => setState(() => _isCtrlActive = true)),
+        _buildToggleKey('ALT', _isAltActive, () => setState(() => _isAltActive = !_isAltActive)),
+        _buildVerticalDivider(),
 
-          _buildTerminalKey('HOME', TerminalKey.home),
-          _buildTerminalKey('END', TerminalKey.end),
-          _buildTerminalKey('PGUP', TerminalKey.pageUp),
-          _buildTerminalKey('PGDN', TerminalKey.pageDown),
-          _buildTerminalKey('DEL', TerminalKey.delete),
-          _buildVerticalDivider(),
+        _buildTerminalKey('ESC', TerminalKey.escape),
+        _buildTerminalKey('TAB', TerminalKey.tab),
+        _buildTerminalKey('↑', TerminalKey.arrowUp),
+        _buildTerminalKey('↓', TerminalKey.arrowDown),
+        _buildTerminalKey('←', TerminalKey.arrowLeft),
+        _buildTerminalKey('→', TerminalKey.arrowRight),
+        _buildVerticalDivider(),
 
-          _buildTerminalKey('F1', TerminalKey.f1),
-          _buildTerminalKey('F2', TerminalKey.f2),
-          _buildTerminalKey('F3', TerminalKey.f3),
-          _buildTerminalKey('F4', TerminalKey.f4),
-          _buildTerminalKey('F5', TerminalKey.f5),
-          _buildTerminalKey('F6', TerminalKey.f6),
-          _buildTerminalKey('F7', TerminalKey.f7),
-          _buildTerminalKey('F8', TerminalKey.f8),
-          _buildTerminalKey('F9', TerminalKey.f9),
-          _buildTerminalKey('F10', TerminalKey.f10),
-          _buildVerticalDivider(),
+        _buildTerminalKey('HOME', TerminalKey.home),
+        _buildTerminalKey('END', TerminalKey.end),
+        _buildTerminalKey('PGUP', TerminalKey.pageUp),
+        _buildTerminalKey('PGDN', TerminalKey.pageDown),
+        _buildTerminalKey('DEL', TerminalKey.delete),
+        _buildVerticalDivider(),
 
-          ..._snippets.map((snippet) => _buildSnippetKey(snippet)),
+        _buildTerminalKey('F1', TerminalKey.f1),
+        _buildTerminalKey('F2', TerminalKey.f2),
+        _buildTerminalKey('F3', TerminalKey.f3),
+        _buildTerminalKey('F4', TerminalKey.f4),
+        _buildTerminalKey('F5', TerminalKey.f5),
+        _buildTerminalKey('F6', TerminalKey.f6),
+        _buildTerminalKey('F7', TerminalKey.f7),
+        _buildTerminalKey('F8', TerminalKey.f8),
+        _buildTerminalKey('F9', TerminalKey.f9),
+        _buildTerminalKey('F10', TerminalKey.f10),
+        _buildVerticalDivider(),
 
-          Padding(
-            padding: const EdgeInsets.only(left: 4.0, right: 16.0),
-            child: TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor: theme.primaryColor.withOpacity(0.15),
-                minimumSize: const Size(40, 35),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              onPressed: _showAddSnippetDialog,
-              child: Icon(Icons.add, color: theme.primaryColor, size: 18),
+        ..._snippets.map((snippet) => _buildSnippetKey(snippet)),
+
+        Padding(
+          padding: const EdgeInsets.only(left: 4.0, right: 16.0),
+          child: TextButton(
+            focusNode: FocusNode(canRequestFocus: false),
+            style: TextButton.styleFrom(
+              backgroundColor: theme.primaryColor.withOpacity(0.15),
+              minimumSize: const Size(40, 35),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
+            onPressed: _showAddSnippetDialog,
+            child: Icon(Icons.add, color: theme.primaryColor, size: 18),
           ),
-        ],
-      ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCtrlActiveRow() {
+    return ListView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      children: [
+        _buildToggleKey('CANCEL', true, () => setState(() => _isCtrlActive = false), isCancel: true),
+        _buildVerticalDivider(),
+        
+        _buildActionKey('C', 'SIGINT', () => _sendCtrlByte('C')),
+        _buildActionKey('D', 'EOF', () => _sendCtrlByte('D')),
+        _buildActionKey('Z', 'SUSPEND', () => _sendCtrlByte('Z')),
+        _buildActionKey('L', 'CLEAR', () => _sendCtrlByte('L')),
+        _buildActionKey('A', 'HOME', () => _sendCtrlByte('A')),
+        _buildActionKey('E', 'END', () => _sendCtrlByte('E')),
+        _buildActionKey('W', 'DEL WORD', () => _sendCtrlByte('W')),
+        _buildActionKey('U', 'DEL LINE', () => _sendCtrlByte('U')),
+      ],
     );
   }
 
@@ -141,13 +148,16 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
     );
   }
 
-  Widget _buildToggleKey(String label, bool isActive, VoidCallback onPressed) {
+  Widget _buildToggleKey(String label, bool isActive, VoidCallback onPressed, {bool isCancel = false}) {
     final theme = Theme.of(context);
+    final bgColor = isCancel ? Colors.red.withOpacity(0.8) : (isActive ? theme.primaryColor : theme.dividerColor.withOpacity(0.5));
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
       child: TextButton(
+        focusNode: FocusNode(canRequestFocus: false),
         style: TextButton.styleFrom(
-          backgroundColor: isActive ? theme.primaryColor : theme.dividerColor.withOpacity(0.5),
+          backgroundColor: bgColor,
           minimumSize: const Size(45, 35),
           padding: const EdgeInsets.symmetric(horizontal: 8),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
@@ -156,7 +166,7 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
         child: Text(
           label,
           style: TextStyle(
-            color: isActive ? theme.colorScheme.surface : theme.textTheme.bodyMedium?.color, 
+            color: isActive || isCancel ? theme.colorScheme.surface : theme.textTheme.bodyMedium?.color, 
             fontWeight: FontWeight.bold, 
             fontSize: 12
           ),
@@ -169,6 +179,7 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
       child: TextButton(
+        focusNode: FocusNode(canRequestFocus: false),
         style: TextButton.styleFrom(
           backgroundColor: Colors.transparent,
           minimumSize: const Size(45, 35),
@@ -187,31 +198,63 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
     );
   }
 
+  Widget _buildActionKey(String letter, String subtitle, VoidCallback onPressed) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 6),
+      child: TextButton(
+        focusNode: FocusNode(canRequestFocus: false),
+        style: TextButton.styleFrom(
+          backgroundColor: theme.primaryColor.withOpacity(0.1),
+          minimumSize: const Size(55, 35),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(6),
+            side: BorderSide(color: theme.primaryColor.withOpacity(0.5)),
+          ),
+        ),
+        onPressed: onPressed,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              letter,
+              style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.bold, fontSize: 14, height: 1.0),
+            ),
+            Text(
+              subtitle,
+              style: const TextStyle(color: Colors.grey, fontSize: 8, height: 1.0),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSnippetKey(Snippet snippet) {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 6),
-      child: InkWell(
-        onLongPress: () => _confirmDeleteSnippet(snippet), 
-        child: TextButton(
-          style: TextButton.styleFrom(
-            backgroundColor: theme.primaryColor.withOpacity(0.1),
-            minimumSize: const Size(60, 35),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(6),
-              side: BorderSide(color: theme.primaryColor.withOpacity(0.3)),
-            ),
+      child: TextButton(
+        focusNode: FocusNode(canRequestFocus: false),
+        style: TextButton.styleFrom(
+          backgroundColor: theme.primaryColor.withOpacity(0.1),
+          minimumSize: const Size(60, 35),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(6),
+            side: BorderSide(color: theme.primaryColor.withOpacity(0.3)),
           ),
-          onPressed: () {
-            String toSend = snippet.command;
-            if (snippet.autoEnter && !_isCtrlActive) toSend += '\r';
-            _sendText(toSend);
-          },
-          child: Text(
-            snippet.label,
-            style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.bold, fontSize: 12),
-          ),
+        ),
+        onPressed: () {
+          String toSend = snippet.command;
+          if (snippet.autoEnter) toSend += '\r';
+          _sendText(toSend);
+        },
+        onLongPress: () => _confirmDeleteSnippet(snippet),
+        child: Text(
+          snippet.label,
+          style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.bold, fontSize: 12),
         ),
       ),
     );

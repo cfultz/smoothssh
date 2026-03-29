@@ -24,10 +24,8 @@ class _LockScreenState extends State<LockScreen> {
     try {
       final bool didAuthenticate = await _auth.authenticate(
         localizedReason: 'Please authenticate to unlock SmoothSSH',
-        options: const AuthenticationOptions(
-          biometricOnly: false, 
-          stickyAuth: true,
-        ),
+        biometricOnly: false, 
+        persistAcrossBackgrounding: true,
       );
 
       if (didAuthenticate && mounted) {
